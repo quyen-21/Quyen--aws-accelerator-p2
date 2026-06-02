@@ -97,3 +97,42 @@ random_pet.evidence_suffix: Destruction complete after 0s
 Destroy complete! Resources: 2 destroyed.
 ```
 
+## W8-D2 - Kubernetes Container/Orchestration
+
+### What I learned
+- Docker image is a package of application and runtime.
+- Container is a running instance of an image.
+- Kubernetes manages containers through Pods.
+- Deployment manages replicas and rolling updates.
+- Service exposes Pods with a stable endpoint.
+
+### What I practiced
+- Checked Docker, kubectl, and minikube installation.
+- Started a local Kubernetes cluster using minikube.
+- Deployed nginx using a Kubernetes Deployment.
+- Exposed nginx using a Service.
+- Checked Pods, Deployments, and Services with kubectl.
+
+### Problems I met
+- Dịch vụ nền Docker Desktop `com.docker.service` mặc định bị dừng trên máy Windows và không thể khởi chạy trực tiếp từ PowerShell nếu không có quyền Administrator.
+
+### How I solved them
+- Cài đặt thành công `minikube` thông qua công cụ `winget`.
+- Hướng dẫn người dùng khởi chạy ứng dụng GUI Docker Desktop thủ công trên màn hình để khởi chạy Docker Engine thành công.
+
+### Evidence
+- Kiểm tra phiên bản các công cụ cơ bản:
+```text
+$ docker --version
+Docker version 28.5.1, build e180ab8
+
+$ kubectl version --client
+Client Version: v1.34.1
+Kustomize Version: v5.7.1
+
+$ minikube version
+minikube version: v1.38.1
+commit: c93a4cb9311efc66b90d33ea03f75f2c4120e9b0
+```
+
+

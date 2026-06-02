@@ -1,0 +1,10 @@
+$ docker --version
+Docker version 28.5.1, build e180ab8
+
+$ kubectl version --client
+Client Version: v1.34.1
+Kustomize Version: v5.7.1
+
+$ minikube version
+minikube version: v1.38.1
+commit: c93a4cb9311efc66b90d33ea03f75f2c4120e9b0
