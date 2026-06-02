@@ -114,11 +114,13 @@ Destroy complete! Resources: 2 destroyed.
 - Checked Pods, Deployments, and Services with kubectl.
 
 ### Problems I met
-- Dịch vụ nền Docker Desktop `com.docker.service` mặc định bị dừng trên máy Windows và không thể khởi chạy trực tiếp từ PowerShell nếu không có quyền Administrator.
+- Ban đầu dịch vụ nền Docker Desktop `com.docker.service` bị dừng trên máy Windows và không thể khởi chạy trực tiếp từ PowerShell nếu không có quyền Administrator.
+- Lệnh khởi động Minikube (`minikube start`) yêu cầu kéo tải kicbase image (520MB) nên mất khoảng vài phút tùy thuộc đường truyền mạng.
 
 ### How I solved them
-- Cài đặt thành công `minikube` thông qua công cụ `winget`.
-- Hướng dẫn người dùng khởi chạy ứng dụng GUI Docker Desktop thủ công trên màn hình để khởi chạy Docker Engine thành công.
+- Đã cài đặt thành công `minikube` thông qua `winget`.
+- Nhờ người dùng bật ứng dụng GUI Docker Desktop thủ công để Docker Engine hoạt động ổn định.
+- Chờ kéo tải thành công các thành phần Kubernetes và Nginx image.
 
 ### Evidence
 - Kiểm tra phiên bản các công cụ cơ bản:
@@ -134,5 +136,65 @@ $ minikube version
 minikube version: v1.38.1
 commit: c93a4cb9311efc66b90d33ea03f75f2c4120e9b0
 ```
+
+- Khởi động Minikube và kiểm tra Cluster:
+```text
+$ minikube start --driver=docker
+* minikube v1.38.1 on Microsoft Windows 11 Home Single Language 24H2
+* Using Docker Desktop driver with root privileges
+* Starting "minikube" primary control-plane node in "minikube" cluster
+* Pulling base image v0.0.50 ...
+* Downloading Kubernetes v1.35.1 preload ...
+* Verifying Kubernetes components...
+  - Using image gcr.io/k8s-minikube/storage-provisioner:v5
+* Enabled addons: storage-provisioner, default-storageclass
+* Done! kubectl is now configured to use "minikube" cluster and "default" namespace by default
+
+$ kubectl get nodes
+NAME       STATUS   ROLES           AGE   VERSION
+minikube   Ready    control-plane   41s   v1.35.1
+```
+
+- Triển khai manifests (Deployment & Service) và kiểm tra trạng thái Pods/Service:
+```text
+$ kubectl apply -f manifests/deployment.yaml
+deployment.apps/w8-day-2-nginx created
+
+$ kubectl apply -f manifests/service.yaml
+service/w8-day-2-nginx-service created
+
+$ kubectl get deployments
+NAME             READY   UP-TO-DATE   AVAILABLE   AGE
+w8-day-2-nginx   2/2     2            2           59s
+
+$ kubectl get pods
+NAME                              READY   STATUS    RESTARTS   AGE
+w8-day-2-nginx-6bff485b56-4k2wx   1/1     Running   0          59s
+w8-day-2-nginx-6bff485b56-n5kw9   1/1     Running   0          59s
+
+$ kubectl get svc
+NAME                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+kubernetes               ClusterIP   10.96.0.1       <none>        443/TCP        101s
+w8-day-2-nginx-service   NodePort    10.107.152.50   <none>        80:31231/TCP   58s
+```
+
+- Kiểm thử truy cập Service (Minikube tunnel URL):
+```text
+$ minikube service w8-day-2-nginx-service --url
+http://127.0.0.1:53257
+
+(Kiểm thử thành công, ứng dụng trả về trang chào mừng của Nginx)
+```
+
+- Kiểm tra logs của Pod:
+```text
+$ kubectl logs w8-day-2-nginx-6bff485b56-4k2wx
+/docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+...
+2026/06/02 04:46:58 [notice] 1#1: start worker processes
+2026/06/02 04:46:58 [notice] 1#1: start worker process 29
+...
+```
+
 
 
