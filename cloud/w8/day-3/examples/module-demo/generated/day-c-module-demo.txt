@@ -1,0 +1,6 @@
+W8-D3 Terraform module demo completed.
+
+What this proves:
+- I can call a local Terraform module.
+- I understand root module and child module.
+- I can run init, fmt, validate, plan, apply, output, and destroy.

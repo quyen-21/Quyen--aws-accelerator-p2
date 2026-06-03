@@ -196,5 +196,58 @@ $ kubectl logs w8-day-2-nginx-6bff485b56-4k2wx
 ...
 ```
 
+## W8-D3 — Terraform state, modules and best practices
+
+### What I learned
+- Khái niệm về **Terraform State**: Là file lưu trạng thái hạ tầng thực tế giúp Terraform đối chiếu và quản lý (`terraform.tfstate`).
+- Sự cần thiết của **Remote State** trong làm việc nhóm để chia sẻ một nguồn sự thật duy nhất (source of truth) thông qua S3 hoặc HCP Terraform.
+- Cơ chế **State Locking**: Ngăn chặn nhiều thao tác ghi cùng lúc gây xung đột hay hỏng file state (sử dụng DynamoDB hoặc S3 Native lockfile).
+- **Terraform Modules**: Gom nhóm tài nguyên có chung mục đích/logic để tái sử dụng (gồm Root module và Child modules).
+- Nguyên tắc thiết kế kiến trúc thông qua **ADR (Architectural Decision Record)**.
+- Các Best Practices: Không commit file cache, variables nhạy cảm, secrets, và state lên Git.
+
+### What I practiced
+- Đọc hiểu tài liệu chuẩn bị kiểm tra `TEST_PREP.md`, ghi chú `NOTES.md`, tài liệu quyết định thiết kế `ADR.md`.
+- Triển khai chạy demo thực tế local module tại `cloud/w8/day-3/examples/module-demo/`.
+- Thực hiện chạy đầy đủ workflow: `init`, `fmt`, `validate`, `plan`, `apply`, `output` và `destroy` để dọn dẹp tài nguyên.
+
+### Problems I met
+- S3 Backend hỗ trợ locking qua DynamoDB hoặc S3 Native lockfile. Tuy nhiên cơ chế locking dựa trên DynamoDB hiện đã bị đánh dấu deprecated và sẽ bị loại bỏ trong tương lai.
+
+### How I solved them
+- Đã ghi nhận trong tài liệu ADR và lưu ý cấu hình `use_lockfile = true` trong `backend.tf.example` để hướng tới cấu hình hiện đại và chuẩn xác nhất theo tài liệu chính thức từ HashiCorp.
+
+### Evidence
+- Kết quả chạy demo local module:
+```text
+$ terraform init
+Initializing modules...
+- day_c_evidence in ..\..\modules\local-file
+Initializing provider plugins found in the configuration...
+- Finding hashicorp/local versions matching "~> 2.5"...
+- Installing hashicorp/local v2.9.0...
+- Installed hashicorp/local v2.9.0 (signed by HashiCorp)
+
+$ terraform validate
+Success! The configuration is valid.
+
+$ terraform plan
+Plan: 1 to add, 0 to change, 0 to destroy.
+Changes to Outputs:
+  + generated_file = "generated/day-c-module-demo.txt"
+
+$ terraform apply -auto-approve
+module.day_c_evidence.local_file.this: Creating...
+module.day_c_evidence.local_file.this: Creation complete after 0s [id=4560b6ae0864a7419f1a3e06f64f8432b5060f83]
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+
+Outputs:
+generated_file = "generated/day-c-module-demo.txt"
+
+$ terraform destroy -auto-approve
+Destroy complete! Resources: 1 destroyed.
+```
+
+
 
 

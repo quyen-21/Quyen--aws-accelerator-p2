@@ -1,0 +1,169 @@
+### 1. terraform init
+```text
+Initializing modules...
+- day_c_evidence in ..\..\modules\local-file
+Initializing provider plugins found in the configuration...
+- Finding hashicorp/local versions matching "~> 2.5"...
+- Installing hashicorp/local v2.9.0...
+- Installed hashicorp/local v2.9.0 (signed by HashiCorp)
+
+Initializing the backend...
+
+
+Terraform has created a lock file .terraform.lock.hcl to record the provider
+selections it made above. Include this file in your version control repository
+so that Terraform can guarantee to make the same selections by default when
+you run "terraform init" in the future.
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+```
+
+### 2. terraform fmt -recursive
+```text
+(Hoàn thành không có lỗi, mã nguồn đã được định dạng chuẩn xác)
+```
+
+### 3. terraform validate
+```text
+Success! The configuration is valid.
+```
+
+### 4. terraform plan
+```text
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # module.day_c_evidence.local_file.this will be created
+  + resource "local_file" "this" {
+      + content              = <<-EOT
+            W8-D3 Terraform module demo completed.
+            
+            What this proves:
+            - I can call a local Terraform module.
+            - I understand root module and child module.
+            - I can run init, fmt, validate, plan, apply, output, and destroy.
+        EOT
+      + content_base64sha256 = (known after apply)
+      + content_base64sha512 = (known after apply)
+      + content_md5          = (known after apply)
+      + content_sha1         = (known after apply)
+      + content_sha256       = (known after apply)
+      + content_sha512       = (known after apply)
+      + directory_permission = "0777"
+      + file_permission      = "0777"
+      + filename             = "generated/day-c-module-demo.txt"
+      + id                   = (known after apply)
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + generated_file = "generated/day-c-module-demo.txt"
+
+─────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't
+guarantee to take exactly these actions if you run "terraform apply" now.
+```
+
+### 5. terraform apply -auto-approve
+```text
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # module.day_c_evidence.local_file.this will be created
+  + resource "local_file" "this" {
+      + content              = <<-EOT
+            W8-D3 Terraform module demo completed.
+            
+            What this proves:
+            - I can call a local Terraform module.
+            - I understand root module and child module.
+            - I can run init, fmt, validate, plan, apply, output, and destroy.
+        EOT
+      + content_base64sha256 = (known after apply)
+      + content_base64sha512 = (known after apply)
+      + content_md5          = (known after apply)
+      + content_sha1         = (known after apply)
+      + content_sha256       = (known after apply)
+      + content_sha512       = (known after apply)
+      + directory_permission = "0777"
+      + file_permission      = "0777"
+      + filename             = "generated/day-c-module-demo.txt"
+      + id                   = (known after apply)
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + generated_file = "generated/day-c-module-demo.txt"
+module.day_c_evidence.local_file.this: Creating...
+module.day_c_evidence.local_file.this: Creation complete after 0s [id=4560b6ae0864a7419f1a3e06f64f8432b5060f83]
+
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+generated_file = "generated/day-c-module-demo.txt"
+```
+
+### 6. terraform output
+```text
+generated_file = "generated/day-c-module-demo.txt"
+```
+
+### 7. terraform destroy -auto-approve
+```text
+module.day_c_evidence.local_file.this: Refreshing state... [id=4560b6ae0864a7419f1a3e06f64f8432b5060f83]
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  - destroy
+
+Terraform will perform the following actions:
+
+  # module.day_c_evidence.local_file.this will be destroyed
+  - resource "local_file" "this" {
+      - content              = <<-EOT
+            W8-D3 Terraform module demo completed.
+            
+            What this proves:
+            - I can call a local Terraform module.
+            - I understand root module and child module.
+            - I can run init, fmt, validate, plan, apply, output, and destroy.
+        EOT -> null
+      - content_base64sha256 = "1gl/X2lM1VEd0G8RvFLdFc0fntuY4lhf6WrqV4Q5sFY=" -> null
+      - content_base64sha512 = "zXiFQ7qnyP7V6K+Z2Xh9FA6Urzc2QezQ1D4TmbvGM0OlLjwVKkxe+3c19uci4oEfx9zxBf+1xdDJaTWUfIbWcQ==" -> null
+      - content_md5          = "9095394ce87de91ee17301a94a5aa604" -> null
+      - content_sha1         = "4560b6ae0864a7419f1a3e06f64f8432b5060f83" -> null
+      - content_sha256       = "d6097f5f694cd5511dd06f11bc52dd15cd1f9edb98e2585fe96aea578439b056" -> null
+      - content_sha512       = "cd788543baa7c8fed5e8af99d9787d140e94af373641ecd0d43e1399bbc63343a52e3c152a4c5efb7735f6e722e2811fc7dcf105ffb5c5d0c96935947c86d671" -> null
+      - directory_permission = "0777" -> null
+      - file_permission      = "0777" -> null
+      - filename             = "generated/day-c-module-demo.txt" -> null
+      - id                   = "4560b6ae0864a7419f1a3e06f64f8432b5060f83" -> null
+    }
+
+Plan: 0 to add, 0 to change, 1 to destroy.
+
+Changes to Outputs:
+  - generated_file = "generated/day-c-module-demo.txt" -> null
+module.day_c_evidence.local_file.this: Destroying... [id=4560b6ae0864a7419f1a3e06f64f8432b5060f83]
+module.day_c_evidence.local_file.this: Destruction complete after 0s
+
+Destroy complete! Resources: 1 destroyed.
+```

@@ -1,0 +1,19 @@
+# Example only. Do not run this unless the S3 bucket and lock mechanism already exist.
+# Current Terraform S3 backend docs support S3 locking and DynamoDB locking,
+# but DynamoDB-based locking is deprecated and will be removed in a future minor version.
+
+terraform {
+  backend "s3" {
+    bucket = "your-terraform-state-bucket"
+    key    = "phase2/w8/day-c/terraform.tfstate"
+    region = "ap-southeast-1"
+
+    # Newer S3 lockfile approach. Check your Terraform version and team standard.
+    use_lockfile = true
+
+    # Older/common course pattern. Kept here for learning because the checklist mentions DynamoDB lock.
+    # dynamodb_table = "terraform-locks"
+
+    encrypt = true
+  }
+}
