@@ -1,8 +1,8 @@
 # W9 Day 2 Checklist — Observability: SLO/SLI/OTel
 
-> Week 9 theme: **Deliver Smartly**  
-> Day 2 topic: **Observability — SLO/SLI/OTel**  
-> Main goal: gắn monitoring/observability vào platform W8/W9 để đo được metrics, logs, SLO và burn rate alert.
+> Theme: **Deliver Smartly**  
+> Topic: **Observability — SLO/SLI/OTel**  
+> Goal: gắn monitoring/observability vào platform W8/W9 để đo được metrics, logs, SLO và burn rate alert.
 
 ---
 
@@ -10,5 +10,10 @@
 
 Sau Day 2, cần chứng minh được:
 
-- [ ] App/cluster có observability stack cơ bản.
-- [ ] Prometheus scrape được metrics
+- [ ] Cluster/app có observability stack cơ bản.
+- [ ] Prometheus scrape được metrics.
+- [ ] Grafana hiển thị dashboard.
+- [ ] Loki xem được logs.
+- [ ] Hiểu SLI/SLO, error budget và burn rate.
+- [ ] Có alert rule cho availability hoặc latency.
+- [ ] Có
