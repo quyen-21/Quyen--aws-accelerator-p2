@@ -11,9 +11,4 @@
 Sau Day 2, cần chứng minh được:
 
 - [ ] Cluster/app có observability stack cơ bản.
-- [ ] Prometheus scrape được metrics.
-- [ ] Grafana hiển thị dashboard.
-- [ ] Loki xem được logs.
-- [ ] Hiểu SLI/SLO, error budget và burn rate.
-- [ ] Có alert rule cho availability hoặc latency.
-- [ ] Có
+- [ ] Prometheus
