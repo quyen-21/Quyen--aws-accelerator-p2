@@ -11,6 +11,4 @@
 Sau Day 2, cần chứng minh được:
 
 - [ ] App/cluster có observability stack cơ bản.
-- [ ] Prometheus scrape được metrics.
-- [ ] Grafana hiển thị được dashboard.
-- [ ] Loki truy vấn được logs.
+- [ ] Prometheus scrape được metrics
