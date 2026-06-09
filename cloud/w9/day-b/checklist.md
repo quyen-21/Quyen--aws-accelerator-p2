@@ -2,7 +2,7 @@
 
 > Theme: **Deliver Smartly**  
 > Topic: **Observability — SLO/SLI/OTel**  
-> Goal: gắn monitoring/observability vào platform W8/W9 để đo được metrics, logs, SLO và burn rate alert.
+> Goal: gắn monitoring/observability vào platform W8/W9 để đo metrics, logs, SLO và burn rate alert.
 
 ---
 
@@ -11,4 +11,6 @@
 Sau Day 2, cần chứng minh được:
 
 - [ ] Cluster/app có observability stack cơ bản.
-- [ ] Prometheus
+- [ ] Prometheus scrape được metrics.
+- [ ] Grafana hiển thị dashboard.
+- [
