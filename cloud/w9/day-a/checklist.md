@@ -539,3 +539,575 @@ Câu nhớ nhanh:
 ```text
 Commit lên Git → GitHub Actions kiểm tra → ArgoCD sync → Kubernetes chạy đúng trạng thái mong muốn.
 ```
+
+---
+
+# 4. GitHub Actions Workflow (PR Validation)
+
+## Mục tiêu
+
+Khi mở Pull Request:
+
+```text
+- Kiểm tra YAML hợp lệ
+- Kiểm tra Kubernetes Manifest
+- Không deploy thật
+```
+
+Khi Merge vào main:
+
+```text
+- ArgoCD tự sync
+- Cluster cập nhật trạng thái mới
+```
+
+---
+
+## Workflow kiểm tra Kubernetes YAML
+
+Tạo file:
+
+```bash
+.github/workflows/validate-k8s.yaml
+```
+
+```yaml
+name: Validate Kubernetes Manifests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Kubeconform
+        run: |
+          curl -L \
+          https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz \
+          | tar xz
+
+      - name: Validate YAML
+        run: |
+          find . \
+          \( -name "*.yaml" -o -name "*.yml" \) \
+          -exec ./kubeconform {} \;
+```
+
+---
+
+## Workflow kiểm tra Terraform
+
+Nếu repo có Terraform:
+
+```bash
+.github/workflows/terraform-check.yaml
+```
+
+```yaml
+name: Terraform Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  terraform:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+```
+
+---
+
+# 5. Cài đặt ArgoCD trên Minikube
+
+## Tạo Namespace
+
+```bash
+kubectl create namespace argocd
+```
+
+---
+
+## Cài ArgoCD
+
+```bash
+kubectl apply \
+-n argocd \
+-f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+```
+
+---
+
+## Kiểm tra Pod
+
+```bash
+kubectl get pods -n argocd
+```
+
+Kết quả mong đợi:
+
+```text
+argocd-server
+argocd-repo-server
+argocd-application-controller
+argocd-dex-server
+```
+
+Tất cả trạng thái:
+
+```text
+Running
+```
+
+---
+
+## Truy cập UI
+
+```bash
+kubectl port-forward svc/argocd-server \
+-n argocd \
+8080:443
+```
+
+Mở:
+
+```text
+https://localhost:8080
+```
+
+---
+
+## Lấy mật khẩu Admin
+
+```bash
+kubectl -n argocd \
+get secret argocd-initial-admin-secret \
+-o jsonpath="{.data.password}" \
+| base64 -d
+```
+
+Username:
+
+```text
+admin
+```
+
+---
+
+# 6. ArgoCD Application
+
+## Mục tiêu
+
+Quản lý toàn bộ ứng dụng W8 bằng Git.
+
+```text
+Git Repository
+      ↓
+   ArgoCD
+      ↓
+ Kubernetes
+```
+
+---
+
+## Application YAML
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: webapp
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/<username>/<repo>.git
+    targetRevision: main
+    path: cloud/w8/manifests
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+
+  syncPolicy:
+
+    automated:
+      prune: true
+      selfHeal: true
+
+    syncOptions:
+      - CreateNamespace=true
+```
+
+Áp dụng:
+
+```bash
+kubectl apply -f webapp.yaml
+```
+
+---
+
+# 7. App of Apps Pattern
+
+## Tại sao cần?
+
+W9 có nhiều thành phần:
+
+```text
+Frontend
+Backend
+Monitoring
+Rollout
+Alert Rules
+Dashboard
+```
+
+Nếu tạo từng Application sẽ rất khó quản lý.
+
+Sử dụng:
+
+```text
+Root Application
+        |
+        +---- Frontend
+        +---- Backend
+        +---- Observability
+        +---- Rollouts
+```
+
+---
+
+## Root Application
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: root-app
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/<username>/<repo>.git
+    targetRevision: main
+    path: cloud/w9/apps
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+```
+
+---
+
+## App Structure
+
+```bash
+cloud/
+└── w9/
+    └── apps/
+
+        ├── frontend.yaml
+        ├── backend.yaml
+        ├── observability.yaml
+        └── rollout.yaml
+```
+
+---
+
+# 8. Sync Waves
+
+## Vấn đề
+
+Nếu Deployment được tạo trước Namespace:
+
+```text
+Deployment FAILED
+```
+
+Nếu Custom Resource được tạo trước CRD:
+
+```text
+FAILED
+```
+
+Cần có thứ tự triển khai.
+
+---
+
+## Namespace
+
+```yaml
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+```
+
+---
+
+## ConfigMap
+
+```yaml
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+```
+
+---
+
+## Service
+
+```yaml
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+```
+
+---
+
+## Deployment
+
+```yaml
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+```
+
+---
+
+## Dashboard / Monitoring
+
+```yaml
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+```
+
+---
+
+## Thứ tự đề xuất cho W9
+
+```text
+Wave -1
+Namespace
+
+Wave 0
+ConfigMap
+Secret
+
+Wave 1
+Service
+
+Wave 2
+Deployment
+Rollout
+
+Wave 3
+PrometheusRule
+
+Wave 4
+Grafana Dashboard
+```
+
+---
+
+# 9. GitOps Flow End-to-End
+
+## Luồng triển khai
+
+```text
+Developer
+    |
+    | Commit
+    v
+
+Git Repository
+    |
+    | Pull Request
+    v
+
+GitHub Actions
+    |
+    | Validate
+    v
+
+Merge Main
+    |
+    v
+
+ArgoCD Detect Changes
+    |
+    v
+
+Sync Cluster
+    |
+    v
+
+Kubernetes Updated
+```
+
+---
+
+## Ví dụ thực tế
+
+Ban đầu:
+
+```yaml
+replicas: 2
+```
+
+Sửa:
+
+```yaml
+replicas: 3
+```
+
+Commit:
+
+```bash
+git add .
+git commit -m "[W9-D1] scale frontend to 3 replicas"
+git push
+```
+
+ArgoCD:
+
+```text
+OutOfSync
+```
+
+Sau vài giây:
+
+```text
+Synced
+Healthy
+```
+
+Kubernetes:
+
+```bash
+kubectl get pods
+```
+
+Kết quả:
+
+```text
+frontend-xxxxx
+frontend-yyyyy
+frontend-zzzzz
+```
+
+---
+
+# 10. GitOps Rollback
+
+## Cách đúng trong GitOps
+
+Tìm commit lỗi:
+
+```bash
+git log --oneline
+```
+
+Ví dụ:
+
+```text
+123abc deploy bad image
+```
+
+Rollback:
+
+```bash
+git revert 123abc
+git push
+```
+
+---
+
+## Điều gì xảy ra?
+
+```text
+Git cập nhật trạng thái cũ
+        ↓
+ArgoCD phát hiện thay đổi
+        ↓
+Cluster tự rollback
+```
+
+---
+
+# Bằng chứng cần nộp Day A
+
+```text
+✅ Screenshot GitHub Actions PASS
+
+✅ Screenshot ArgoCD Login
+
+✅ Screenshot Application Synced
+
+✅ Screenshot Application Healthy
+
+✅ Screenshot Root App
+
+✅ Screenshot Sync Wave Resources
+
+✅ Screenshot Git Commit History
+
+✅ Screenshot Git Revert Demo
+
+✅ Commit:
+   [W9-D1] add argocd application
+
+✅ Commit:
+   [W9-D1] add github actions validation
+```
+
+## Kết quả sau khi bổ sung
+
+Day A của bạn sẽ bao gồm:
+
+```text
+1. GitOps
+2. CI/CD
+3. ArgoCD
+4. GitHub Actions
+5. ArgoCD Application
+6. App of Apps
+7. Sync Waves
+8. GitOps Flow
+9. GitOps Rollback
+10. Evidence Checklist
+```
+
+=> Đủ để khớp với Day B (Observability) và Day C (Progressive Delivery) thành một bộ W9 hoàn chỉnh.
+
