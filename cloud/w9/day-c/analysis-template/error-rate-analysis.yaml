@@ -1,0 +1,55 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: error-rate-check
+spec:
+  metrics:
+  - name: error-rate
+    interval: 30s
+    successCondition: result[0] < 0.05
+    failureLimit: 3
+    provider:
+      prometheus:
+        address: http://prometheus-operated:9090
+        query: |
+          (
+            sum(
+              rate(
+                http_requests_total{
+                  status=~"5.."
+                }[5m]
+              )
+            )
+          )
+          /
+          (
+            sum(
+              rate(
+                http_requests_total[5m]
+              )
+            )
+          )
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: latency-check
+spec:
+  metrics:
+  - name: latency-p95
+    interval: 30s
+    successCondition: result[0] < 0.5
+    failureLimit: 3
+    provider:
+      prometheus:
+        address: http://prometheus-operated:9090
+        query: |
+          histogram_quantile(
+            0.95,
+            sum(
+              rate(
+                http_request_duration_seconds_bucket[5m]
+              )
+            ) by (le)
+          )
