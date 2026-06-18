@@ -1,6 +1,6 @@
 # W10-Day B: Secrets Rotation & Supply Chain Security
 
-Tài liệu tóm tắt lý thuyết cốt lời của **W10 - Day B** (AWS Secrets Manager, External Secrets Operator - ESO, Trivy scan, Cosign signing và Admission Verify).
+Tài liệu tóm tắt lý thuyết cốt lõi của **W10 - Day B** (AWS Secrets Manager, External Secrets Operator - ESO, Trivy scan, Cosign signing và Admission Verify).
 
 ---
 
